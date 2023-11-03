@@ -2,6 +2,9 @@ package org.repository;
 
 import org.jdbc.Constants;
 import org.model.Ders;
+import org.model.DersDto;
+import org.model.Konu;
+import org.model.Ogretmen;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -60,5 +63,20 @@ public class DersRepository {
         con.close();
         return result;
     }
-
+    public ArrayList<DersDto> getAllDTO() throws SQLException {
+        ArrayList<DersDto> list = new ArrayList<>();
+        Connection connection = Constants.getConnection();
+        Statement statement = connection.createStatement();
+        ResultSet result = statement.executeQuery("select \"DERS\".\"OGRETMEN_ID\", \"OGRETMEN\".\"NAME\" AS \"OGR_NAME\", \"OGRETMEN\".\"IS_GICIK\", \"DERS\".\"KONU_ID\", \"KONU\".\"NAME\" AS \"KONU_NAME\" from \"DERS\" inner join \"OGRETMEN\" ON \"OGRETMEN\".\"ID\" = \"DERS\".\"OGRETMEN_ID\" inner join \"KONU\" ON \"KONU\".\"ID\" = \"DERS\".\"KONU_ID\";");
+        while (result.next())
+        {
+            Ogretmen ogr = new Ogretmen(result.getLong("OGRETMEN_ID"), result.getString("OGR_NAME"), result.getBoolean("IS_GICIK"));
+            Konu konu = new Konu(result.getLong("KONU_ID"), result.getString("KONU_NAME"));
+            list.add(new DersDto(ogr, konu));
+        }
+        result.close();
+        statement.close();
+        connection.close();
+        return list;
+    }
 }
